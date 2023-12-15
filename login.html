@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.3.6/dist/web3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+</head>
+<body>
+    <div class="container">
+        <h2>Authentication</h2>
+        <div id="loginForm">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" class="form-control" id="username">
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" class="form-control" id="password">
+            </div>
+            <button type="button" class="btn btn-primary" onclick="login()">Login</button>
+            <button type="button" class="btn btn-primary" onclick="showRegisterForm()">Register</button>
+        </div>
+        <div id="registerForm" class="d-none">
+            <div class="form-group">
+                <label for="newUsername">Username:</label>
+                <input type="text" class="form-control" id="newUsername">
+            </div>
+            <div class="form-group">
+                <label for="newPassword">Password:</label>
+                <input type="password" class="form-control" id="newPassword">
+            </div>
+            <button type="button" class="btn btn-primary" onclick="registerNewUser()">Register</button>
+            <button type="button" class="btn btn-primary" onclick="cancelRegistration()">Cancel</button>
+        </div>
+        <div id="loggedInStatus" class="d-none">
+            <h3>Logged In</h3>
+            <button type="button" class="btn btn-primary" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <script>
+      
+        // Replace with your contract address and ABI
+        const contractAddress = '0xD8cFe816b260BC882b9862bec215A73e8a45cA9A';
+        const contractAbi = [
+            // Include your contract ABI here
+            {
+                "inputs": [],
+                "stateMutability": "nonpayable",
+                "type": "constructor"
+              },
+              {
+                "anonymous": false,
+                "inputs": [
+                  {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "userAddress",
+                    "type": "address"
+                  }
+                ],
+                "name": "UserLoggedIn",
+                "type": "event"
+              },
+              {
+                "anonymous": false,
+                "inputs": [
+                  {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "userAddress",
+                    "type": "address"
+                  },
+                  {
+                    "indexed": false,
+                    "internalType": "string",
+                    "name": "username",
+                    "type": "string"
+                  }
+                ],
+                "name": "UserRegistered",
+                "type": "event"
+              },
+              {
+                "inputs": [],
+                "name": "owner",
+                "outputs": [
+                  {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                  }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+              },
+              {
+                "inputs": [
+                  {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                  }
+                ],
+                "name": "usernameToAddress",
+                "outputs": [
+                  {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                  }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+              },
+              {
+                "inputs": [
+                  {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                  }
+                ],
+                "name": "users",
+                "outputs": [
+                  {
+                    "internalType": "string",
+                    "name": "username",
+                    "type": "string"
+                  },
+                  {
+                    "internalType": "string",
+                    "name": "passwordHash",
+                    "type": "string"
+                  }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+              },
+              {
+                "inputs": [
+                  {
+                    "internalType": "string",
+                    "name": "_username",
+                    "type": "string"
+                  },
+                  {
+                    "internalType": "string",
+                    "name": "_passwordHash",
+                    "type": "string"
+                  }
+                ],
+                "name": "registerUser",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+              },
+              {
+                "inputs": [
+                  {
+                    "internalType": "string",
+                    "name": "_username",
+                    "type": "string"
+                  },
+                  {
+                    "internalType": "string",
+                    "name": "_passwordHash",
+                    "type": "string"
+                  }
+                ],
+                "name": "loginUser",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+              },
+              {
+                "inputs": [
+                  {
+                    "internalType": "string",
+                    "name": "_username",
+                    "type": "string"
+                  },
+                  {
+                    "internalType": "string",
+                    "name": "_newPasswordHash",
+                    "type": "string"
+                  }
+                ],
+                "name": "forgotPassword",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+              }
+        ];
+
+        let web3;
+        let contractInstance;
+
+        async function initWeb3() {
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+                try {
+                    await window.ethereum.enable();
+                } catch (error) {
+                    console.error("User denied account access");
+                }
+            } else if (window.web3) {
+                web3 = new Web3(web3.currentProvider);
+            } else {
+                console.error("No web3 provider detected");
+            }
+        }
+
+        async function initContract() {
+            contractInstance = new web3.eth.Contract(contractAbi, contractAddress);
+        }
+
+        async function login() {
+          console.log("login function called");
+          var username = $('#username').val();
+          var password = $('#password').val();
+          // Make a request to CouchDB view
+          $.ajax({
+            type: 'GET', // Change to POST if you've modified your view to accept POST requests
+            url: 'http://localhost:5984/certificate_validation/_design/auth/_view/auth',
+            data: JSON.stringify({ key: JSON.stringify(username) }),
+            contentType: 'application/json',
+            dataType: 'json',
+            beforeSend: function (xhr) {
+              // Include Basic Authentication header
+              xhr.setRequestHeader('Authorization', 'Basic ' + btoa('whitehat65:Google@12'));
+            },
+            success: function (response) {
+              console.log(response);
+              if (response.rows.length > 0) {
+                // Extract user information from the key
+                var userKey = response.rows[0].key;
+                console.log(userKey);
+                fetchDocumentByKey(userKey,password);
+                //var user = JSON.parse(userKey);
+                //console.log(user);
+                // Check password or other conditions if needed
+                //var password = $('#password').val();
+                //if (user.password === password) {
+                  // Successful login
+                 // alert('Login successful!');
+                //} else {
+                  //alert('Incorrect password');
+                //}
+              } else {
+                alert('User not found');
+              }
+            },
+            error: function (error) {
+              console.error('Error:', error);
+            }
+          });
+        }
+        async function fetchDocumentByKey(key,password) {
+          console.log("Fetching document for key:", key);
+        
+          // Make a request to CouchDB with the specific document ID (key)
+          $.ajax({
+            type: 'GET',
+            url: `http://localhost:5984/certificate_validation/${encodeURIComponent(key)}`,
+            contentType: 'application/json',
+            dataType: 'json',
+            beforeSend: function (xhr) {
+              // Include Basic Authentication header
+              xhr.setRequestHeader('Authorization', 'Basic ' + btoa('whitehat65:Google@12'));
+            },
+            success: function (response) {
+              console.log(response);
+              if(response.password==password){
+                console.log("Login Successfully");
+                window.location.href='/admin.html';
+              }
+              // Process the retrieved document
+              if (response._id) {
+                console.log("Document ID:", response._id);
+                // Access other document properties as needed
+              } else {
+                console.log('Document not found');
+              }
+            },
+            error: function (error) {
+              console.error('Error:', error);
+            }
+          });
+        }
+        
+        
+        
+
+        // Add similar functions for registration, logout, etc.
+
+        async function showRegisterForm() {
+            document.getElementById('loginForm').classList.add('d-none');
+            document.getElementById('registerForm').classList.remove('d-none');
+        }
+        
+        async function registerNewUser() {
+            console.log("called");
+            const newUsername = document.getElementById('newUsername').value;
+            const newPassword = document.getElementById('newPassword').value;
+        
+            try {
+                // Check if the username is not empty
+                if (newUsername.trim() === '') {
+                    console.error("Username cannot be empty");
+                    // You can display an error message to the user if needed
+                    return;
+                }
+        
+                // Check if the password is not empty
+                if (newPassword.trim() === '') {
+                    console.error("Password cannot be empty");
+                    // You can display an error message to the user if needed
+                    return;
+                }
+        
+                // Retrieve the user's Ethereum account (address) using web3.js
+                const accounts = await web3.eth.getAccounts();
+                const userAccount = accounts[0];
+        
+                // Call the register function on your contract
+                const result = await contractInstance.methods.registerUser(newUsername, newPassword).send({ from: userAccount });
+        
+                // Handle the result as needed
+                console.log("Registration successful:", result);
+
+                // Save registration details to CouchDB
+                const couchDBData = {
+                  username: newUsername,
+                  password: newPassword,
+                  timestamp: new Date().toISOString(),
+                  transactionHash: result.transactionHash,
+                  blockNumber: result.blockNumber,
+                  from: result.from,
+                  to: result.to,
+                  cumulativeGasUsed: result.cumulativeGasUsed,
+                  gasUsed: result.gasUsed,
+                  status: result.status,
+                  effectiveGasPrice: result.effectiveGasPrice,
+                  type: result.type,
+                  // Add other relevant data you want to store
+              };
+
+              // Assuming CouchDB is running locally on the default port
+              const couchDBUrl = 'http://127.0.0.1:5984/certificate_validation'; // Change to your actual database URL
+
+              const axiosConfig = {
+                auth: {
+                  username: 'whitehat65',
+                  password: 'Google@12',
+                },
+              };
+              
+              await axios.post(couchDBUrl, couchDBData, axiosConfig);
+              
+        
+                // Clear the input fields
+                document.getElementById('newUsername').value = '';
+                document.getElementById('newPassword').value = '';
+        
+                // You might want to automatically log in the user after registration
+                // You can call the login function here or redirect to the login form
+            } catch (error) {
+                console.error("Error during registration:", error);
+                // Handle the error, display an error message, or perform other actions
+            }
+        }
+        
+
+        async function cancelRegistration() {
+            document.getElementById('registerForm').classList.add('d-none');
+            document.getElementById('loginForm').classList.remove('d-none');
+        }
+
+        async function logout() {
+            // Implement logout logic if needed
+            document.getElementById('loggedInStatus').classList.add('d-none');
+            document.getElementById('loginForm').classList.remove('d-none');
+        }
+
+        window.onload = async function () {
+            await initWeb3();
+            await initContract();
+            // You can perform additional initialization here
+        };
+    </script>
+</body>
+</html>
