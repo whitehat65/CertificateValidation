@@ -6,6 +6,10 @@ contract Authentication {
 
     struct User {
         string username;
+        string fname;
+        string lname;
+        string universityname;
+        string clgname;
         string passwordHash; // In a real-world scenario, use a more secure hashing algorithm
     }
 
@@ -30,12 +34,16 @@ contract Authentication {
         owner = msg.sender;
     }
 
-    function registerUser(string memory _username, string memory _passwordHash) public {
+    function registerUser(string memory _username, string memory _passwordHash, string memory _fname, string memory _lname, string memory _universityname, string memory _clgname) public {
         require(usernameToAddress[_username] == address(0), "Username already exists");
 
         User storage newUser = users[msg.sender];
         newUser.username = _username;
         newUser.passwordHash = _passwordHash;
+        newUser.fname = _fname;
+        newUser.lname = _lname;
+        newUser.universityname = _universityname;
+        newUser.clgname = _clgname;
 
         usernameToAddress[_username] = msg.sender;
 
