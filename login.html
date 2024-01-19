@@ -16,6 +16,7 @@
     <div class="container">
         <h2>Authentication</h2>
         <div id="loginForm">
+          
             <div class="form-group">
                 <label for="username">Username:</label>
                 <input type="text" class="form-control" id="username">
@@ -26,8 +27,27 @@
             </div>
             <button type="button" class="btn btn-primary" onclick="login()">Login</button>
             <button type="button" class="btn btn-primary" onclick="showRegisterForm()">Register</button>
+            <button>
+              <a href="registration.html">Registration</a>
+            </button>
         </div>
         <div id="registerForm" class="d-none">
+          <div class="form-group">
+            <label for="username">Fname:</label>
+            <input type="text" class="form-control" id="fname">
+        </div>
+        <div class="form-group">
+            <label for="username">lname:</label>
+            <input type="text" class="form-control" id="lname">
+        </div>
+        <div class="form-group">
+            <label for="username">University:</label>
+            <input type="text" class="form-control" id="university">
+        </div>
+        <div class="form-group">
+            <label for="username">clg name:</label>
+            <input type="text" class="form-control" id="clgName">
+        </div>
             <div class="form-group">
                 <label for="newUsername">Username:</label>
                 <input type="text" class="form-control" id="newUsername">
@@ -36,7 +56,7 @@
                 <label for="newPassword">Password:</label>
                 <input type="password" class="form-control" id="newPassword">
             </div>
-            <button type="button" class="btn btn-primary" onclick="registerNewUser()">Register</button>
+            <button type="button" class="btn btn-primary" onclick="registerNewUser()">Register</button>            
             <button type="button" class="btn btn-primary" onclick="cancelRegistration()">Cancel</button>
         </div>
         <div id="loggedInStatus" class="d-none">
@@ -50,156 +70,195 @@
         // Replace with your contract address and ABI
         const contractAddress = '0xD8cFe816b260BC882b9862bec215A73e8a45cA9A';
         const contractAbi = [
-            // Include your contract ABI here
+        {
+          "inputs": [],
+          "stateMutability": "nonpayable",
+          "type": "constructor"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
             {
-                "inputs": [],
-                "stateMutability": "nonpayable",
-                "type": "constructor"
-              },
-              {
-                "anonymous": false,
-                "inputs": [
-                  {
-                    "indexed": true,
-                    "internalType": "address",
-                    "name": "userAddress",
-                    "type": "address"
-                  }
-                ],
-                "name": "UserLoggedIn",
-                "type": "event"
-              },
-              {
-                "anonymous": false,
-                "inputs": [
-                  {
-                    "indexed": true,
-                    "internalType": "address",
-                    "name": "userAddress",
-                    "type": "address"
-                  },
-                  {
-                    "indexed": false,
-                    "internalType": "string",
-                    "name": "username",
-                    "type": "string"
-                  }
-                ],
-                "name": "UserRegistered",
-                "type": "event"
-              },
-              {
-                "inputs": [],
-                "name": "owner",
-                "outputs": [
-                  {
-                    "internalType": "address",
-                    "name": "",
-                    "type": "address"
-                  }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-              },
-              {
-                "inputs": [
-                  {
-                    "internalType": "string",
-                    "name": "",
-                    "type": "string"
-                  }
-                ],
-                "name": "usernameToAddress",
-                "outputs": [
-                  {
-                    "internalType": "address",
-                    "name": "",
-                    "type": "address"
-                  }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-              },
-              {
-                "inputs": [
-                  {
-                    "internalType": "address",
-                    "name": "",
-                    "type": "address"
-                  }
-                ],
-                "name": "users",
-                "outputs": [
-                  {
-                    "internalType": "string",
-                    "name": "username",
-                    "type": "string"
-                  },
-                  {
-                    "internalType": "string",
-                    "name": "passwordHash",
-                    "type": "string"
-                  }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-              },
-              {
-                "inputs": [
-                  {
-                    "internalType": "string",
-                    "name": "_username",
-                    "type": "string"
-                  },
-                  {
-                    "internalType": "string",
-                    "name": "_passwordHash",
-                    "type": "string"
-                  }
-                ],
-                "name": "registerUser",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-              },
-              {
-                "inputs": [
-                  {
-                    "internalType": "string",
-                    "name": "_username",
-                    "type": "string"
-                  },
-                  {
-                    "internalType": "string",
-                    "name": "_passwordHash",
-                    "type": "string"
-                  }
-                ],
-                "name": "loginUser",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-              },
-              {
-                "inputs": [
-                  {
-                    "internalType": "string",
-                    "name": "_username",
-                    "type": "string"
-                  },
-                  {
-                    "internalType": "string",
-                    "name": "_newPasswordHash",
-                    "type": "string"
-                  }
-                ],
-                "name": "forgotPassword",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-              }
-        ];
-
+              "indexed": true,
+              "internalType": "address",
+              "name": "userAddress",
+              "type": "address"
+            }
+          ],
+          "name": "UserLoggedIn",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "userAddress",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "username",
+              "type": "string"
+            }
+          ],
+          "name": "UserRegistered",
+          "type": "event"
+        },
+        {
+          "inputs": [],
+          "name": "owner",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "string",
+              "name": "",
+              "type": "string"
+            }
+          ],
+          "name": "usernameToAddress",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "name": "users",
+          "outputs": [
+            {
+              "internalType": "string",
+              "name": "username",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "fname",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "lname",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "universityname",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "clgname",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "passwordHash",
+              "type": "string"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "string",
+              "name": "_username",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "_passwordHash",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "_fname",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "_lname",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "_universityname",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "_clgname",
+              "type": "string"
+            }
+          ],
+          "name": "registerUser",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "string",
+              "name": "_username",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "_passwordHash",
+              "type": "string"
+            }
+          ],
+          "name": "loginUser",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "string",
+              "name": "_username",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "_newPasswordHash",
+              "type": "string"
+            }
+          ],
+          "name": "forgotPassword",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        }
+      ];
+    
         let web3;
         let contractInstance;
 
@@ -308,6 +367,10 @@
         
         async function registerNewUser() {
             console.log("called");
+            const newFname = document.getElementById('fname').value;
+            const newLname = document.getElementById('lname').value;
+            const newUniversity = document.getElementById('university').value;
+            const newClgName = document.getElementById('clgName').value;
             const newUsername = document.getElementById('newUsername').value;
             const newPassword = document.getElementById('newPassword').value;
         
@@ -331,13 +394,17 @@
                 const userAccount = accounts[0];
         
                 // Call the register function on your contract
-                const result = await contractInstance.methods.registerUser(newUsername, newPassword).send({ from: userAccount });
+                const result = await contractInstance.methods.registerUser(newFname,newLname,newUniversity,newClgName, newUsername,newPassword).send({ from: userAccount });
         
                 // Handle the result as needed
                 console.log("Registration successful:", result);
 
                 // Save registration details to CouchDB
                 const couchDBData = {
+                  fname:newFname,
+                  lname:newLname,
+                  university:newUniversity,
+                  clg_name:newClgName,
                   username: newUsername,
                   password: newPassword,
                   timestamp: new Date().toISOString(),

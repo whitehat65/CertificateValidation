@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.3.6/dist/web3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+</head>
+<body>
+    <div class="container">
+        <div class="form-group">
+            <label for="username">Fname:</label>
+            <input type="text" class="form-control" id="fname">
+        </div>
+        <div class="form-group">
+            <label for="username">lname:</label>
+            <input type="text" class="form-control" id="lname">
+        </div>
+        <div class="form-group">
+            <label for="username">University:</label>
+            <input type="text" class="form-control" id="university">
+        </div>
+        <div class="form-group">
+            <label for="username">clg name:</label>
+            <input type="text" class="form-control" id="clgName">
+        </div>
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" class="form-control" id="username">
+        </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" class="form-control" id="password">
+        </div>
+        <button type="button" class="btn btn-primary" onclick="registerNewUser()">Register</button>
+    </div>
+<script>
+    const contractAddress = '0xD8cFe816b260BC882b9862bec215A73e8a45cA9A';
+        const contractAbi = [
+        {
+          "inputs": [],
+          "stateMutability": "nonpayable",
+          "type": "constructor"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "userAddress",
+              "type": "address"
+            }
+          ],
+          "name": "UserLoggedIn",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "userAddress",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "username",
+              "type": "string"
+            }
+          ],
+          "name": "UserRegistered",
+          "type": "event"
+        },
+        {
+          "inputs": [],
+          "name": "owner",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "string",
+              "name": "",
+              "type": "string"
+            }
+          ],
+          "name": "usernameToAddress",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "name": "users",
+          "outputs": [
+            {
+              "internalType": "string",
+              "name": "username",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "fname",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "lname",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "universityname",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "clgname",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "passwordHash",
+              "type": "string"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "string",
+              "name": "_username",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "_passwordHash",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "_fname",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "_lname",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "_universityname",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "_clgname",
+              "type": "string"
+            }
+          ],
+          "name": "registerUser",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "string",
+              "name": "_username",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "_passwordHash",
+              "type": "string"
+            }
+          ],
+          "name": "loginUser",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "string",
+              "name": "_username",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "_newPasswordHash",
+              "type": "string"
+            }
+          ],
+          "name": "forgotPassword",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        }
+      ];
+    let web3;
+        let contractInstance;
+
+        async function initWeb3() {
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+                try {
+                    await window.ethereum.enable();
+                } catch (error) {
+                    console.error("User denied account access");
+                }
+            } else if (window.web3) {
+                web3 = new Web3(web3.currentProvider);
+            } else {
+                console.error("No web3 provider detected");
+            }
+        }
+
+        async function initContract() {
+            contractInstance = new web3.eth.Contract(contractAbi, contractAddress);
+        }
+    async function registerNewUser() {
+        console.log("called");
+        const newFname = document.getElementById('fname').value;
+        const newLname = document.getElementById('lname').value;
+        const newUniversity = document.getElementById('university').value;
+        const newClgName = document.getElementById('clgName').value;
+        const newUsername = document.getElementById('username').value;
+        const newPassword = document.getElementById('password').value;
+    
+        try {
+            // Check if the username is not empty
+            if (newUsername.trim() === '') {
+                console.error("Username cannot be empty");
+                // You can display an error message to the user if needed
+                return;
+            }
+    
+            // Check if the password is not empty
+            if (newPassword.trim() === '') {
+                console.error("Password cannot be empty");
+                // You can display an error message to the user if needed
+                return;
+            }
+    
+            // Retrieve the user's Ethereum account (address) using web3.js
+            const accounts = await web3.eth.getAccounts();
+            const userAccount = accounts[0];
+    
+            // Call the register function on your contract
+            const result = await contractInstance.methods.registerUser(newFname,newLname,newUniversity,newClgName, newUsername,newPassword).send({ from: userAccount });
+    
+            // Handle the result as needed
+            console.log("Registration successful:", result);
+
+            // Save registration details to CouchDB
+            const couchDBData = {
+              username: newUsername,
+              password: newPassword,
+              timestamp: new Date().toISOString(),
+              transactionHash: result.transactionHash,
+              blockNumber: result.blockNumber,
+              from: result.from,
+              to: result.to,
+              cumulativeGasUsed: result.cumulativeGasUsed,
+              gasUsed: result.gasUsed,
+              status: result.status,
+              effectiveGasPrice: result.effectiveGasPrice,
+              type: result.type,
+              // Add other relevant data you want to store
+          };
+
+          // Assuming CouchDB is running locally on the default port
+          const couchDBUrl = 'http://127.0.0.1:5984/certificate_validation'; // Change to your actual database URL
+
+          const axiosConfig = {
+            auth: {
+              username: 'whitehat65',
+              password: 'Google@12',
+            },
+          };
+          
+          await axios.post(couchDBUrl, couchDBData, axiosConfig);
+          
+    
+            // Clear the input fields
+            document.getElementById('newUsername').value = '';
+            document.getElementById('newPassword').value = '';
+    
+            // You might want to automatically log in the user after registration
+            // You can call the login function here or redirect to the login form
+        } catch (error) {
+            console.error("Error during registration:", error);
+            // Handle the error, display an error message, or perform other actions
+        }
+    }
+    window.onload = async () => {
+        await initWeb3();
+        await initContract();
+    };
+</script>
+</body>
+</html>
